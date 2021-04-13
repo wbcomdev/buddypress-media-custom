@@ -1,0 +1,97 @@
+diff --git app/assets/js/rtMedia.backbone.js app/assets/js/rtMedia.backbone.js
+index 0a8c252..7986097 100644
+--- app/assets/js/rtMedia.backbone.js
++++ app/assets/js/rtMedia.backbone.js
+@@ -567,6 +567,7 @@ jQuery( function( $ ) {
+ 
+ 			},
+ 			initUploader: function( a ) {
++
+ 				if ( typeof ( a ) !== 'undefined' ) {
+ 					a = false;// If rtmediapro widget calls the function, dont show max size note.
+ 				}			this.uploader.init();
+@@ -604,12 +605,20 @@ jQuery( function( $ ) {
+ 		} );
+ 
+ 		if ( $( '#rtMedia-upload-button' ).length > 0 ) {
++
++
+ 			if ( typeof rtmedia_upload_type_filter == 'object' && rtmedia_upload_type_filter.length > 0 ) {
+ 				rtMedia_plupload_config.filters[0].extensions = rtmedia_upload_type_filter.join();
+ 			}
++			
++				
++
++
+ 			uploaderObj = new UploadView( rtMedia_plupload_config );
+ 			uploaderObj.initUploader();
+ 
++
++
+ 			var rtnObj = '';
+ 			var redirect_request = false;
+ 
+@@ -801,6 +810,7 @@ jQuery( function( $ ) {
+ 					if ( allow_upload == false ) {
+ 						return false;
+ 					}
++
+ 					uploaderObj.uploadFiles();
+ 				}
+ 
+@@ -1976,7 +1986,7 @@ jQuery( document ).ready( function( $ ) {
+ 
+ 
+ function rtmedia_selected_file_list( plupload, file, uploader, error, comment_media_id ) {
+-	var icon = '', err_msg = '', upload_progress = '', title = '';
++	var icon = '', err_msg = '', upload_progress = '', title = '', is_gold_memeber = true ;
+ 
+ 	/**
+ 	 * Blank error display issue resolved
+@@ -2024,6 +2034,8 @@ function rtmedia_selected_file_list( plupload, file, uploader, error, comment_me
+ 		err_msg = error.message + '. ' + window.file_extn_info;
+ 		title = 'title=\'' + err_msg + '\'';
+ 		icon = '<i class="dashicons dashicons-info" ' + title + '></i>';
++		is_gold_memeber = false;
++
+ 	}
+ 
+ 	var rtmedia_plupload_file = '<li class="plupload_file ui-state-default plupload_queue_li" id="' + file.id + '" ' + title + '>';
+@@ -2052,6 +2064,11 @@ function rtmedia_selected_file_list( plupload, file, uploader, error, comment_me
+ 
+ 	jQuery( rtmedia_plupload_file ).appendTo( rtmedia_uploader_filelist );
+ 
++	if( ! is_gold_memeber ) {
++		rtmedia_gallery_action_alert_message( 'Only gold member can upload video. To become a gold member choose a membership plan form top menu.', 'success' );
++
++	}
++
+ 	if ( comment_media_id ) {
+ 		jQuery( '#rtmedia-comment-media-upload-' + comment_media_id ).focus();
+ 	} else {
+diff --git app/main/controllers/template/rtmedia-functions.php app/main/controllers/template/rtmedia-functions.php
+index 230ee36..e296bc8 100644
+--- app/main/controllers/template/rtmedia-functions.php
++++ app/main/controllers/template/rtmedia-functions.php
+@@ -2912,8 +2912,11 @@ function is_rtmedia_upload_video_enabled() {
+ 
+ 	global $rtmedia;
+ 
+-	if ( isset( $rtmedia->options['allowedTypes_video_enabled'] ) && 0 !== intval( $rtmedia->options['allowedTypes_video_enabled'] ) ) {
+-		return true;
++	if( wbcom_is_user_gold_member( bp_loggedin_user_id() ) ){
++
++		if ( isset( $rtmedia->options['allowedTypes_video_enabled'] ) && 0 !== intval( $rtmedia->options['allowedTypes_video_enabled'] ) ) {
++			return true;
++		}
+ 	}
+ 
+ 	return false;
+@@ -2972,6 +2975,7 @@ function get_rtmedia_allowed_upload_type() {
+ 	$sep            = '';
+ 
+ 	foreach ( $rtmedia->allowed_types as $type ) {
++
+ 		if ( function_exists( 'is_rtmedia_upload_' . $type['name'] . '_enabled' ) && call_user_func( 'is_rtmedia_upload_' . $type['name'] . '_enabled' ) ) {
+ 			foreach ( $type['extn'] as $extn ) {
+ 				$allow_type_str .= $sep . $extn;

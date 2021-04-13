@@ -2912,8 +2912,11 @@ function is_rtmedia_upload_video_enabled() {
 
 	global $rtmedia;
 
-	if ( isset( $rtmedia->options['allowedTypes_video_enabled'] ) && 0 !== intval( $rtmedia->options['allowedTypes_video_enabled'] ) ) {
-		return true;
+	if( wbcom_is_user_gold_member( bp_loggedin_user_id() ) ){
+
+		if ( isset( $rtmedia->options['allowedTypes_video_enabled'] ) && 0 !== intval( $rtmedia->options['allowedTypes_video_enabled'] ) ) {
+			return true;
+		}
 	}
 
 	return false;
@@ -2972,6 +2975,7 @@ function get_rtmedia_allowed_upload_type() {
 	$sep            = '';
 
 	foreach ( $rtmedia->allowed_types as $type ) {
+
 		if ( function_exists( 'is_rtmedia_upload_' . $type['name'] . '_enabled' ) && call_user_func( 'is_rtmedia_upload_' . $type['name'] . '_enabled' ) ) {
 			foreach ( $type['extn'] as $extn ) {
 				$allow_type_str .= $sep . $extn;
